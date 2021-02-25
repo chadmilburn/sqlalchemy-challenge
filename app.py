@@ -1,4 +1,3 @@
-  
 # import dependencies
 from flask import Flask, jsonify
 import sqlalchemy
@@ -40,6 +39,8 @@ def welcome():
 # precip route
 @app.route('/api/v1.0/precipitation')
 def precipitation():
+    # create session for API
+    session = Session(engine)
     print("Server received request for 'Precipietion' page...")
     precip_data = session.query(Measurement.date, Measurement.prcp).\
         order_by(Measurement.date).all()
@@ -57,6 +58,8 @@ def precipitation():
 # stations route
 @app.route('/api/v1.0/stations')
 def stations():
+    # create session for API
+    session = Session(engine)
     print("Server received request for 'Stations' page...")
     #get station names
     station_data = session.query(Station.station).all()
@@ -68,6 +71,8 @@ def stations():
 # tobs route
 @app.route('/api/v1.0/tobs')
 def tobs():
+    # create session for API
+    session = Session(engine)
     print("Server received request for 'TOBS' page...")
     # find one year prior date 
     one_year_ago = dt.date(2017,8,18) - dt.timedelta(days=365)
@@ -81,11 +86,13 @@ def tobs():
 # custom start to end route
 @app.route('/api/v1.0/start_date/<start>')
 def start_date(start):
+    # create session for API
+    session = Session(engine)
     print("Server received request for 'Start_Date' page...")
     #When given the start only, calculate `TMIN`, `TAVG`, and `TMAX` for all dates greater than and equal to the start date.
     #query Data base
     data = session.query(func.min(Measurement.tobs),func.avg(Measurement.tobs),func.max(Measurement.tobs)).\
-        filter(Measurement.date >= start)
+        filter(Measurement.date >= start).all()
     #close session for next query
     session.close()
     # retrieve data
@@ -95,15 +102,17 @@ def start_date(start):
     for min_tobs, avg_tobs, max_tobs in data:
         #dict for each iteration
         tobs_dict = {}
-        tobs_dict["Min_Tobs"] = min_tobs
-        tobs_dict["Avg_Tobs"] = avg_tobs
-        tobs_dict["Max_Tobs"] = max_tobs
+        tobs_dict["MIN TOBS"] = min_tobs
+        tobs_dict["AVG TOBS"] = avg_tobs
+        tobs_dict["MAX TOBS"] = max_tobs
         t_normals.append(tobs_dict)
     return jsonify(t_normals)
 
 # custom date range route
 @app.route('/api/v1.0/start_end/<start>/<end>')
 def custom_range(start,end):
+    # create session for API
+    session = Session(engine)
     print("Server received request for 'Custom_Range' page...")
     data = session.query(func.min(Measurement.tobs),func.avg(Measurement.tobs),func.max(Measurement.tobs)).\
         filter(Measurement.date >= start).filter(Measurement.date<=end).all()
@@ -116,9 +125,9 @@ def custom_range(start,end):
     for min_tobs, avg_tobs, max_tobs in data:
         #dict for each iteration
         tobs_dict = {}
-        tobs_dict["Min_Tobs"] = min_tobs
-        tobs_dict["Avg_Tobs"] = avg_tobs
-        tobs_dict["Max_Tobs"] = max_tobs
+        tobs_dict["MIN TOBS"] = min_tobs
+        tobs_dict["AVG TOBS"] = avg_tobs
+        tobs_dict["MAX TOBS"] = max_tobs
         t_normals.append(tobs_dict)
     return jsonify(t_normals)
 
