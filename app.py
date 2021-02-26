@@ -86,16 +86,18 @@ def tobs():
 # custom start to end route
 @app.route('/api/v1.0/start_date/<start>')
 def start_date(start):
+    start = dt.datetime.strptime(start, '%Y-%m-%d')
     # create session for API
     session = Session(engine)
     print("Server received request for 'Start_Date' page...")
     #When given the start only, calculate `TMIN`, `TAVG`, and `TMAX` for all dates greater than and equal to the start date.
     #query Data base
     data = session.query(func.min(Measurement.tobs),func.avg(Measurement.tobs),func.max(Measurement.tobs)).\
-        filter(Measurement.date >= start).all()
+        filter(Measurement.date>= start).all()
     #close session for next query
     session.close()
     # retrieve data
+    print(data)
     #dict to retrun from
     t_normals = []
     # loop to retrieve data
@@ -111,6 +113,8 @@ def start_date(start):
 # custom date range route
 @app.route('/api/v1.0/start_end/<start>/<end>')
 def custom_range(start,end):
+    start = dt.datetime.strptime(start, '%Y-%m-%d')
+    end = dt.datetime.strptime(end, '%Y-%m-%d')
     # create session for API
     session = Session(engine)
     print("Server received request for 'Custom_Range' page...")
